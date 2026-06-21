@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const TOOLS = [
-  { href: "/", label: "PayPal", live: true },
-  { href: "#", label: "Cripto", live: false },
-  { href: "#", label: "Remesas", live: false },
+  { href: "/", label: "PayPal" },
+  { href: "/cripto", label: "Cripto" },
+  { href: "/remesas", label: "Remesas" },
 ];
 
 export default function NavBar() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 bg-navy-deep text-white">
@@ -27,27 +29,23 @@ export default function NavBar() {
 
           {/* Desktop nav */}
           <nav className="hidden sm:flex items-center gap-1">
-            {TOOLS.map((tool) =>
-              tool.live ? (
+            {TOOLS.map((tool) => {
+              const active = pathname === tool.href;
+              return (
                 <Link
                   key={tool.label}
                   href={tool.href}
-                  className="px-3.5 py-2 rounded-full text-[13px] font-medium text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                  aria-current={active ? "page" : undefined}
+                  className={`px-3.5 py-2 rounded-full text-[13px] font-medium transition-colors ${
+                    active
+                      ? "bg-white/15 text-white"
+                      : "text-white/80 hover:text-white hover:bg-white/10"
+                  }`}
                 >
                   {tool.label}
                 </Link>
-              ) : (
-                <span
-                  key={tool.label}
-                  className="px-3.5 py-2 rounded-full text-[13px] font-medium text-white/35 cursor-default flex items-center gap-1.5"
-                >
-                  {tool.label}
-                  <span className="text-[9px] uppercase tracking-wide bg-white/10 px-1.5 py-0.5 rounded-full">
-                    pronto
-                  </span>
-                </span>
-              )
-            )}
+              );
+            })}
           </nav>
 
           {/* Mobile toggle */}
@@ -81,28 +79,22 @@ export default function NavBar() {
         {/* Mobile nav */}
         {open && (
           <nav className="sm:hidden pb-4 flex flex-col gap-1">
-            {TOOLS.map((tool) =>
-              tool.live ? (
+            {TOOLS.map((tool) => {
+              const active = pathname === tool.href;
+              return (
                 <Link
                   key={tool.label}
                   href={tool.href}
                   onClick={() => setOpen(false)}
-                  className="px-3.5 py-2.5 rounded-lg text-[14px] font-medium text-white/90 hover:bg-white/10 transition-colors"
+                  aria-current={active ? "page" : undefined}
+                  className={`px-3.5 py-2.5 rounded-lg text-[14px] font-medium transition-colors ${
+                    active ? "bg-white/15 text-white" : "text-white/90 hover:bg-white/10"
+                  }`}
                 >
                   {tool.label}
                 </Link>
-              ) : (
-                <span
-                  key={tool.label}
-                  className="px-3.5 py-2.5 rounded-lg text-[14px] font-medium text-white/35 flex items-center gap-2"
-                >
-                  {tool.label}
-                  <span className="text-[9px] uppercase tracking-wide bg-white/10 px-1.5 py-0.5 rounded-full">
-                    pronto
-                  </span>
-                </span>
-              )
-            )}
+              );
+            })}
           </nav>
         )}
       </div>

@@ -9,9 +9,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: "https://finanzaslatam.xyz/paypal",
+      url: "https://finanzaslatam.xyz/cripto",
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: "https://finanzaslatam.xyz/remesas",
+      lastModified: new Date(),
+      changeFrequency: "weekly",
       priority: 0.9,
     },
     {

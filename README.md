@@ -1,15 +1,18 @@
 # Latam Finanzas
 
-Portfolio de calculadoras financieras para Latinoamérica, empezando con comisiones de PayPal. Dominio: **finanzaslatam.xyz**.
+Portfolio de calculadoras financieras para Latinoamérica. Dominio: **finanzaslatam.xyz**.
 
 ## Estructura
-- `/` — landing del portafolio
-- `/paypal` — calculadora de comisiones PayPal (México, Colombia, Chile, Argentina, Venezuela como referencia)
+- `/` — calculadora de comisiones PayPal (México, Colombia, Chile, Argentina, Venezuela como referencia)
+- `/cripto` — brecha cambiaria (tasa oficial vs. Binance P2P / dólar blue) para Venezuela y Argentina
+- `/remesas` — comparador de costo real (comisión + margen cambiario) entre Wise, Western Union y Payoneer
+- `/paypal` — redirect 308 a `/` (ruta legada, conserva SEO de versiones anteriores)
 
 ## Stack
 - Next.js 16 (App Router, TypeScript, Turbopack)
 - Tailwind CSS v4
-- Fuentes self-hosted vía `next/font` (Fraunces, Inter, JetBrains Mono)
+- Fuentes self-hosted vía `next/font` (Space Grotesk, Inter, JetBrains Mono)
+- Estilo fintech moderno: navy + violeta + menta, tarjetas redondeadas, navbar fija
 
 ## Desarrollo local
 ```bash
@@ -21,27 +24,30 @@ npm run dev
 1. Subir este repo a GitHub
 2. Importar en Vercel — detecta Next.js automáticamente
 3. Settings → Domains → agregar `finanzaslatam.xyz`
-4. En el DNS del dominio (Cloudflare, Namecheap, etc.) apuntar a Vercel
+4. En el DNS del dominio apuntar a Vercel
 
 ## Antes de salir a producción
 - [ ] Reemplazar `pub-0000000000000000` en `public/ads.txt` con el publisher ID real de AdSense
 - [ ] Agregar una imagen `og-image.png` (1200x630) real en `/public`
-- [ ] Configurar `NEXT_PUBLIC_GA_MEASUREMENT_ID` en Vercel cuando exista la propiedad de Analytics
+- [ ] Configurar `NEXT_PUBLIC_GA_MEASUREMENT_ID` en Vercel
 - [ ] Enviar el sitemap a Google Search Console
 
+## Por qué Cripto y Remesas no tienen tasas hardcodeadas
+
+A diferencia de SDLT o las comisiones de PayPal (tarifas estructurales fijadas por ley o política, estables por meses), el precio del USDT en Binance P2P y el dólar blue argentino cambian por minuto. Hardcodear un número ahí sería publicar un dato falso desde el día siguiente. Por eso:
+
+- **`/cripto`** le pide al usuario las dos tasas del momento (oficial y paralela) y calcula la brecha — la calculadora aporta el cálculo, no el dato de mercado.
+- **`/remesas`** usa estructuras de comisión representativas (publicadas por cada proveedor) pero le pide al usuario el tipo de cambio del día — mismo principio.
+
 ## Fuente de datos
-Tarifas de PayPal verificadas contra las páginas oficiales de comercios:
-- `paypal.com/mx/business/paypal-business-fees`
-- `paypal.com/co/business/paypal-business-fees` (aplica también a Chile y Argentina, misma tabla "resto del mundo")
 
-Lógica en `src/lib/paypal-fees.ts`, testeada contra 5 casos manuales:
-- México nacional $100 → $95.75 neto ✓
-- México internacional $100 → $95.25 neto ✓
-- Colombia nacional $100 → $94.30 neto ✓
-- Chile internacional $100 → $94.30 neto ✓
-- Cálculo inverso (cobrar para recibir $100 neto en Colombia) → $106.03 ✓
+**PayPal** (`src/lib/paypal-fees.ts`): verificado contra `paypal.com/mx/business/paypal-business-fees` y `paypal.com/co/business/paypal-business-fees` (aplica también a Chile y Argentina).
 
-Si PayPal cambia sus tarifas, actualizar las constantes en `src/lib/paypal-fees.ts` — la UI se actualiza sola.
+**Brecha cambiaria** (`src/lib/exchange-gap.ts`): fórmula `(paralelo − oficial) / oficial × 100`, validada contra cifras reales reportadas en prensa (Venezuela BCV vs Binance P2P, Argentina oficial vs blue).
+
+**Remesas** (`src/lib/remittance.ts`): estructuras de tarifa representativas de Wise (sin margen cambiario, comisión transparente), Western Union (margen 3-6% típico) y Payoneer (2% + margen), basadas en reportes 2026 de Consumer Reports y comparativas de prensa especializada.
+
+Tests manuales en los tres módulos — ver historial de validación en cada archivo de lib.
 
 ## Agregar la siguiente calculadora
-Mismo patrón que `/paypal`: una carpeta de ruta nueva, su lógica separada en `src/lib/`, y una entrada en el array `tools` de `src/app/page.tsx`.
+Mismo patrón: una carpeta de ruta nueva, su lógica separada en `src/lib/`, una entrada en `TOOLS` dentro de `src/components/NavBar.tsx`.
