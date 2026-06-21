@@ -35,10 +35,10 @@ export default function ContactPage() {
             Correo
           </div>
           <a
-            href="mailto:gabriel@gabrielbarberan.com"
+            href="mailto:estoapoikile@gmail.com"
             className="font-display text-xl text-ink hover:text-violet transition-colors"
           >
-            gabriel@gabrielbarberan.com
+            estoapoikile@gmail.com
           </a>
         </div>
 
