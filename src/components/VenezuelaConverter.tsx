@@ -45,14 +45,14 @@ export default function VenezuelaConverter() {
         <label className="block text-[12px] font-semibold text-ink-soft mb-2.5">
           Tengo
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           {(["usd", "eur", "ves"] as ConverterCurrency[]).map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => setFromCurrency(c)}
               aria-pressed={fromCurrency === c}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition-all cursor-pointer ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-[12px] sm:text-[13px] font-medium transition-all cursor-pointer whitespace-nowrap ${
                 fromCurrency === c
                   ? "bg-violet text-white shadow-[0_4px_12px_-2px_rgba(108,92,231,0.45)]"
                   : "bg-paper text-ink-soft hover:bg-violet-soft"
