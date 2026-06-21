@@ -1,24 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FAF6EF;
-  --foreground: #1F2937;
+  --background: #F7F8FC;
+  --foreground: #0A0E27;
 
-  --color-ink: #1F2937;
-  --color-ink-soft: #4B5563;
-  --color-paper: #FAF6EF;
+  --color-ink: #0A0E27;
+  --color-ink-soft: #5B6178;
+  --color-paper: #F7F8FC;
   --color-paper-raised: #FFFFFF;
-  --color-clay: #BC6C4D;
-  --color-clay-soft: #E8C9BA;
-  --color-bill: #1F6F54;
-  --color-bill-soft: #C7DED4;
-  --color-line: #E2D9C8;
-
-  --color-band-0: #E2D9C8;
-  --color-band-1: #C7DED4;
-  --color-band-2: #8FB8A4;
-  --color-band-3: #BC6C4D;
-  --color-band-4: #8A3E27;
+  --color-violet: #6C5CE7;
+  --color-violet-soft: #E4E0FB;
+  --color-mint: #00D9A3;
+  --color-mint-soft: #D4F7EC;
+  --color-coral: #FF6B6B;
+  --color-coral-soft: #FFE2E2;
+  --color-line: #E6E8F0;
+  --color-navy-deep: #0A0E27;
+  --color-navy-mid: #161B3D;
 }
 
 @theme inline {
@@ -28,17 +26,16 @@
   --color-ink-soft: var(--color-ink-soft);
   --color-paper: var(--color-paper);
   --color-paper-raised: var(--color-paper-raised);
-  --color-clay: var(--color-clay);
-  --color-clay-soft: var(--color-clay-soft);
-  --color-bill: var(--color-bill);
-  --color-bill-soft: var(--color-bill-soft);
+  --color-violet: var(--color-violet);
+  --color-violet-soft: var(--color-violet-soft);
+  --color-mint: var(--color-mint);
+  --color-mint-soft: var(--color-mint-soft);
+  --color-coral: var(--color-coral);
+  --color-coral-soft: var(--color-coral-soft);
   --color-line: var(--color-line);
-  --color-band-0: var(--color-band-0);
-  --color-band-1: var(--color-band-1);
-  --color-band-2: var(--color-band-2);
-  --color-band-3: var(--color-band-3);
-  --color-band-4: var(--color-band-4);
-  --font-display: var(--font-fraunces);
+  --color-navy-deep: var(--color-navy-deep);
+  --color-navy-mid: var(--color-navy-mid);
+  --font-display: var(--font-space-grotesk);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains);
 }
@@ -49,14 +46,14 @@ body {
 }
 
 input[type="range"] {
-  accent-color: var(--color-clay);
+  accent-color: var(--color-violet);
 }
 
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid var(--color-clay);
+  outline: 2px solid var(--color-violet);
   outline-offset: 2px;
 }
 

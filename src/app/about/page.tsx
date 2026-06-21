@@ -13,10 +13,10 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="max-w-[760px] mx-auto px-6 py-14 sm:py-16 pb-20">
+    <main className="max-w-[760px] mx-auto px-5 sm:px-6 pt-10 sm:pt-14 pb-20">
       <Link
         href="/"
-        className="inline-block font-mono text-xs text-ink-soft hover:text-clay transition-colors mb-6"
+        className="inline-block font-mono text-xs text-ink-soft hover:text-violet transition-colors mb-6"
       >
         ← Latam Finanzas
       </Link>
@@ -49,7 +49,7 @@ export default function AboutPage() {
         <p>
           Si encontrás un error, una tarifa desactualizada, o tenés una
           sugerencia, mirá la{" "}
-          <Link href="/contact" className="text-clay hover:underline">
+          <Link href="/contact" className="text-violet hover:underline">
             página de contacto
           </Link>
           .

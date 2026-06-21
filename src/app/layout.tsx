@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+import NavBar from "@/components/NavBar";
 
-// Self-hosted via next/font/google — Next.js downloads these at build time
-// and serves them from your own domain (no runtime request to Google).
-// Requires internet access during `next build`, which Vercel has by default.
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
@@ -90,14 +88,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Set NEXT_PUBLIC_ADSENSE_CLIENT_ID in Vercel's environment variables
-  // once you have your real AdSense publisher ID (looks like ca-pub-XXXXXXXXXXXXXXXX).
-  // Until it's set, no AdSense script loads — safe to deploy as-is.
   const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
-
-  // Set NEXT_PUBLIC_GA_MEASUREMENT_ID in Vercel's environment variables
-  // once you have a GA4 property (looks like G-XXXXXXXXXX).
-  // Until it's set, no GA script loads — safe to deploy as-is.
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
   return (
@@ -130,8 +121,9 @@ export default function RootLayout({
         )}
       </head>
       <body
-        className={`${fraunces.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
+        <NavBar />
         {children}
       </body>
     </html>
