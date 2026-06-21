@@ -3,12 +3,12 @@
 Portfolio de calculadoras financieras para Latinoamérica. Dominio: **finanzaslatam.xyz**.
 
 ## Estructura
-- `/` — calculadora de comisiones PayPal (México, Colombia, Chile, Argentina, Venezuela como referencia)
+- `/` — calculadora de comisiones PayPal (México, Colombia, Chile, Argentina, Bolivia, Venezuela como referencia)
 - `/cripto` — calculadora de brecha cambiaria (5 países) + links a las 3 páginas dedicadas
 - `/cripto/venezuela` — dashboard de BCV Dólar y BCV Euro, auto-actualizados
 - `/cripto/argentina` — dashboard de oficial, blue y Euro, auto-actualizados
 - `/cripto/bolivia` — dashboard de oficial (BCB) y paralelo (Binance), auto-actualizados
-- `/remesas` — comparador de costo real (comisión + margen cambiario) entre Wise, Western Union y Payoneer
+- `/remesas` — comparador de costo real (comisión + margen cambiario) entre Wise, Western Union y Payoneer, con selector de país origen y destino
 - `/paypal` — redirect 308 a `/` (ruta legada, conserva SEO de versiones anteriores)
 
 ## Stack
@@ -57,7 +57,9 @@ A diferencia de SDLT o las comisiones de PayPal (tarifas estructurales fijadas p
 
 ## Fuente de datos
 
-**PayPal** (`src/lib/paypal-fees.ts`): verificado contra `paypal.com/mx/business/paypal-business-fees` y `paypal.com/co/business/paypal-business-fees` (aplica también a Chile y Argentina).
+**PayPal** (`src/lib/paypal-fees.ts`): verificado contra `paypal.com/mx/business/paypal-business-fees`, `paypal.com/co/business/paypal-business-fees`, y `paypal.com/bo/business/paypal-business-fees`. Bolivia no aparece en ninguna tabla de tarifa diferenciada de PayPal, así que usa la misma estructura "resto del mundo" que Colombia, Chile y Argentina (5.40% + comisión fija).
+
+**Remesas** (`/remesas`): el selector de país origen (Desde) y destino (Hacia) ajusta automáticamente la moneda de destino mostrada. El país de origen es contextual — las estructuras de comisión que usamos son representativas y no varían por origen específico, ya que no tenemos una matriz verificada de tarifas por cada corredor origen-destino exacto.
 
 **Brecha cambiaria** (`src/lib/exchange-gap.ts`): fórmula `(paralelo − oficial) / oficial × 100`, validada contra cifras reales reportadas en prensa (Venezuela BCV vs Binance P2P, Argentina oficial vs blue).
 

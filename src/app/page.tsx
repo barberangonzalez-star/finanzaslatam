@@ -15,7 +15,7 @@ export default function Home() {
       priceCurrency: "USD",
     },
     description:
-      "Calculadora de comisiones de PayPal para freelancers y vendedores en México, Colombia, Chile y Argentina, con desglose de tarifa porcentual, fija y conversión de divisa.",
+      "Calculadora de comisiones de PayPal para freelancers y vendedores en México, Colombia, Chile, Argentina y Bolivia, con desglose de tarifa porcentual, fija y conversión de divisa.",
     about: {
       "@type": "Thing",
       name: "Comisiones PayPal",
@@ -32,7 +32,7 @@ export default function Home() {
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-soft mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-violet" aria-hidden />
           <span className="font-mono text-[11px] font-semibold text-violet uppercase tracking-wide">
-            México · Colombia · Chile · Argentina
+            México · Colombia · Chile · Argentina · Bolivia
           </span>
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-bold leading-[1.1] tracking-tight mb-3">

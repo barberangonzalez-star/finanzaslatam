@@ -17,6 +17,7 @@ const COUNTRY_FLAGS: Record<Country, string> = {
   co: "🇨🇴",
   cl: "🇨🇱",
   ar: "🇦🇷",
+  bo: "🇧🇴",
   ve: "🇻🇪",
 };
 

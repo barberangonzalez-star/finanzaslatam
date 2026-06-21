@@ -11,6 +11,44 @@
 // Because exchange rates change constantly, the user supplies the current
 // mid-market rate (easily found via Google/XE) rather than this tool
 // hardcoding a rate that goes stale.
+//
+// Origin and destination country selectors are intentionally about framing
+// and currency, not a per-route fee matrix: actual provider fees vary by
+// the exact origin-destination pair, amount, and payment method, and we
+// don't have a verified table of every route. Selecting a destination sets
+// the currency the result displays in; selecting an origin is shown as
+// context (some providers have different availability or payment methods
+// by origin country) without silently implying we have exact fees for
+// that specific corridor.
+
+export interface OriginCountry {
+  code: string;
+  name: string;
+}
+
+export const ORIGIN_COUNTRIES: OriginCountry[] = [
+  { code: "us", name: "Estados Unidos" },
+  { code: "es", name: "España" },
+  { code: "mx", name: "México" },
+  { code: "co", name: "Colombia" },
+  { code: "ar", name: "Argentina" },
+  { code: "cl", name: "Chile" },
+];
+
+export interface DestinationCountry {
+  code: string;
+  name: string;
+  currency: string;
+}
+
+export const DESTINATION_COUNTRIES: DestinationCountry[] = [
+  { code: "mx", name: "México", currency: "MXN" },
+  { code: "co", name: "Colombia", currency: "COP" },
+  { code: "ar", name: "Argentina", currency: "ARS" },
+  { code: "bo", name: "Bolivia", currency: "BOB" },
+  { code: "cl", name: "Chile", currency: "CLP" },
+  { code: "ve", name: "Venezuela", currency: "VES" },
+];
 
 export interface RemittanceProvider {
   id: string;

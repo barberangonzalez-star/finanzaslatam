@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     template: "%s | Latam Finanzas",
   },
   description:
-    "Calculadoras gratuitas de comisiones PayPal, criptomonedas y remesas para México, Colombia, Chile, Argentina y Venezuela. Datos actualizados 2026.",
+    "Calculadoras gratuitas de comisiones PayPal, criptomonedas y remesas para México, Colombia, Chile, Argentina, Bolivia y Venezuela. Datos actualizados 2026.",
   keywords: [
     "calculadora paypal latinoamerica",
     "comisiones paypal mexico",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     siteName: "Latam Finanzas",
     title: "Latam Finanzas | Calculadoras financieras para Latinoamérica",
     description:
-      "Calculadoras gratuitas de comisiones, cripto y remesas para México, Colombia, Chile, Argentina y Venezuela.",
+      "Calculadoras gratuitas de comisiones, cripto y remesas para México, Colombia, Chile, Argentina, Bolivia y Venezuela.",
     images: [
       {
         url: "/og-image.png",

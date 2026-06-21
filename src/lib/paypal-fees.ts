@@ -1,12 +1,16 @@
 // PayPal fee calculation for Latin American markets — verified against
 // official PayPal merchant fee pages (paypal.com/mx/business/paypal-business-fees,
-// paypal.com/co/business/paypal-business-fees) as of June 2026.
+// paypal.com/co/business/paypal-business-fees, paypal.com/bo/business/paypal-business-fees)
+// as of June 2026.
 //
-// México has its own fee structure. Colombia, Chile, and Argentina (along with
-// most of the rest of the region) fall under PayPal's "Rest of World" standard
-// commercial transaction fee table, which is identical across those markets.
+// México has its own fee structure. Colombia, Chile, Argentina, and Bolivia
+// (along with most of the rest of the region) fall under PayPal's "Rest of
+// World" standard commercial transaction fee table, which is identical
+// across those markets — confirmed Bolivia isn't listed in any of PayPal's
+// differentiated-rate tables, so it falls into "todos los demás mercados"
+// at 5.40%, same as CO/CL/AR.
 
-export type Country = "mx" | "co" | "cl" | "ar" | "ve";
+export type Country = "mx" | "co" | "cl" | "ar" | "bo" | "ve";
 
 export type TransactionScope = "national" | "international";
 
@@ -23,6 +27,7 @@ export const COUNTRIES: CountryInfo[] = [
   { code: "co", name: "Colombia", currency: "COP", currencySymbol: "$", paypalSupported: true },
   { code: "cl", name: "Chile", currency: "CLP", currencySymbol: "$", paypalSupported: true },
   { code: "ar", name: "Argentina", currency: "ARS", currencySymbol: "$", paypalSupported: true },
+  { code: "bo", name: "Bolivia", currency: "BOB", currencySymbol: "$", paypalSupported: true },
   {
     code: "ve",
     name: "Venezuela",
@@ -33,13 +38,14 @@ export const COUNTRIES: CountryInfo[] = [
 ];
 
 // Standard commercial transaction fee (receiving payments), before any
-// monthly-volume discount. México has its own lower national rate; CO/CL/AR
+// monthly-volume discount. México has its own lower national rate; CO/CL/AR/BO
 // share PayPal's "Rest of World" standard rate.
 const NATIONAL_FEE_RATE: Record<Country, number> = {
   mx: 0.0395,
   co: 0.054,
   cl: 0.054,
   ar: 0.054,
+  bo: 0.054,
   ve: 0.054, // shown for reference only — PayPal access from Venezuela is unofficial/restricted
 };
 
@@ -50,17 +56,19 @@ const INTERNATIONAL_SURCHARGE: Record<Country, number> = {
   co: 0,
   cl: 0,
   ar: 0,
+  bo: 0,
   ve: 0,
 };
 
-// International transactions for CO/CL/AR use a single combined rate of 5.40%
-// rather than a separate add-on — México is the only market in this set with
-// a distinct national vs. international split.
+// International transactions for CO/CL/AR/BO use a single combined rate of
+// 5.40% rather than a separate add-on — México is the only market in this
+// set with a distinct national vs. international split.
 const INTERNATIONAL_FEE_RATE: Record<Country, number> = {
   mx: NATIONAL_FEE_RATE.mx + INTERNATIONAL_SURCHARGE.mx,
   co: 0.054,
   cl: 0.054,
   ar: 0.054,
+  bo: 0.054,
   ve: 0.054,
 };
 
@@ -71,12 +79,13 @@ const FIXED_FEE_USD = 0.3;
 
 // Currency conversion markup PayPal applies over its base exchange rate
 // when converting received funds to another currency. The Americas region
-// rate is used for CO/CL/AR/VE; México has its own published rate.
+// rate (4.50%) applies to CO/CL/AR/BO/VE; México has its own published rate.
 const CONVERSION_MARKUP: Record<Country, number> = {
   mx: 0.035,
   co: 0.045,
   cl: 0.045,
   ar: 0.045,
+  bo: 0.045,
   ve: 0.045,
 };
 
