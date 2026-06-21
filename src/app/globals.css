@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAF6EF;
+  --foreground: #1F2937;
+
+  --color-ink: #1F2937;
+  --color-ink-soft: #4B5563;
+  --color-paper: #FAF6EF;
+  --color-paper-raised: #FFFFFF;
+  --color-clay: #BC6C4D;
+  --color-clay-soft: #E8C9BA;
+  --color-bill: #1F6F54;
+  --color-bill-soft: #C7DED4;
+  --color-line: #E2D9C8;
+
+  --color-band-0: #E2D9C8;
+  --color-band-1: #C7DED4;
+  --color-band-2: #8FB8A4;
+  --color-band-3: #BC6C4D;
+  --color-band-4: #8A3E27;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-paper: var(--color-paper);
+  --color-paper-raised: var(--color-paper-raised);
+  --color-clay: var(--color-clay);
+  --color-clay-soft: var(--color-clay-soft);
+  --color-bill: var(--color-bill);
+  --color-bill-soft: var(--color-bill-soft);
+  --color-line: var(--color-line);
+  --color-band-0: var(--color-band-0);
+  --color-band-1: var(--color-band-1);
+  --color-band-2: var(--color-band-2);
+  --color-band-3: var(--color-band-3);
+  --color-band-4: var(--color-band-4);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+input[type="range"] {
+  accent-color: var(--color-clay);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
