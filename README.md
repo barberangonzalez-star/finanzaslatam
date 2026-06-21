@@ -36,8 +36,9 @@ npm run dev
 
 A diferencia de SDLT o las comisiones de PayPal (tarifas estructurales fijadas por ley o política, estables por meses), el precio del USDT en Binance P2P y el dólar blue argentino cambian por minuto. Hardcodear un número ahí sería publicar un dato falso desde el día siguiente. Por eso:
 
-- **`/cripto`** le pide al usuario las dos tasas del momento (oficial y paralela) y calcula la brecha — la calculadora aporta el cálculo, no el dato de mercado.
-- **`/remesas`** usa estructuras de comisión representativas (publicadas por cada proveedor) pero le pide al usuario el tipo de cambio del día — mismo principio.
+- **`/cripto`** auto-completa lo que sí tiene fuente pública sin API key (tasa BCV oficial vía `rates.dolarvzla.com`, y oficial + blue de Argentina vía `dolarapi.com`), a través de la API route `src/app/api/rates/route.ts`. El precio P2P de Venezuela queda manual porque ninguna fuente pública que encontramos lo expone sin requerir una API key registrada (Cotizave, dolarvzla.com) — preferimos no depender de una key de terceros que podría cambiar de plan sin avisar.
+- **`/remesas`** usa estructuras de comisión representativas (publicadas por cada proveedor) pero le pide al usuario el tipo de cambio del día — mismo principio: ese tipo de cambio cambia constantemente y no tiene fuente única confiable para todos los pares de moneda que cubre el comparador.
+- Si la fuente automática falla (caída, cambio de formato), el campo cae a edición manual con un indicador visual ("sin datos — ingresá manual") — la calculadora nunca se rompe por una API externa caída.
 
 ## Fuente de datos
 

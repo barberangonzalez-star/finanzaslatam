@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   GAP_COUNTRIES,
   GapCountry,
@@ -16,10 +16,16 @@ const COUNTRY_FLAGS: Record<GapCountry, string> = {
   cl: "🇨🇱",
 };
 
+// Only Venezuela and Argentina have a working auto-fetch route — Colombia
+// and Chile stay fully manual (no key-free public source found for either).
+const AUTO_FETCH_COUNTRIES: GapCountry[] = ["ve", "ar"];
+
 function parseAmount(raw: string): number {
   const cleaned = raw.replace(/[^0-9.]/g, "");
   return cleaned ? parseFloat(cleaned) : 0;
 }
+
+type FetchStatus = "idle" | "loading" | "success" | "error";
 
 export default function ExchangeGapCalculator() {
   const [amountInput, setAmountInput] = useState("100");
@@ -28,10 +34,18 @@ export default function ExchangeGapCalculator() {
   const [parallelInput, setParallelInput] = useState("803.90");
   const [showBreakdown, setShowBreakdown] = useState(false);
 
+  const [officialStatus, setOfficialStatus] = useState<FetchStatus>("idle");
+  const [parallelStatus, setParallelStatus] = useState<FetchStatus>("idle");
+  const [officialFetchedAt, setOfficialFetchedAt] = useState<string | null>(null);
+
+  // Bumping this triggers a re-fetch (country change, or manual "Actualizar" click).
+  const [refreshToken, setRefreshToken] = useState(0);
+
   const amount = parseAmount(amountInput);
   const officialRate = parseAmount(officialInput);
   const parallelRate = parseAmount(parallelInput);
   const selectedCountry = GAP_COUNTRIES.find((c) => c.code === country)!;
+  const canAutoFetch = AUTO_FETCH_COUNTRIES.includes(country);
 
   const result = useMemo(
     () => calculateExchangeGap(amount, officialRate, parallelRate),
@@ -39,6 +53,53 @@ export default function ExchangeGapCalculator() {
   );
 
   const isPositiveGap = result.gapPercent >= 0;
+
+  // Effect owns the entire fetch lifecycle, including the "loading" state —
+  // nothing outside the effect dispatches setState synchronously.
+  useEffect(() => {
+    if (!AUTO_FETCH_COUNTRIES.includes(country)) return;
+
+    const controller = new AbortController();
+
+    (async () => {
+      setOfficialStatus("loading");
+      if (country === "ar") setParallelStatus("loading");
+
+      try {
+        const res = await fetch(`/api/rates?country=${country}`, {
+          signal: controller.signal,
+        });
+        const data = await res.json();
+        if (controller.signal.aborted) return;
+
+        if (data.ok) {
+          if (typeof data.official === "number") {
+            setOfficialInput(data.official.toFixed(2));
+            setOfficialStatus("success");
+            setOfficialFetchedAt(data.fetchedAt);
+          } else {
+            setOfficialStatus("error");
+          }
+
+          if (country === "ar" && typeof data.parallel === "number") {
+            setParallelInput(data.parallel.toFixed(2));
+            setParallelStatus("success");
+          } else if (country === "ar") {
+            setParallelStatus("error");
+          }
+        } else {
+          setOfficialStatus("error");
+          if (country === "ar") setParallelStatus("error");
+        }
+      } catch {
+        if (controller.signal.aborted) return;
+        setOfficialStatus("error");
+        if (country === "ar") setParallelStatus("error");
+      }
+    })();
+
+    return () => controller.abort();
+  }, [country, refreshToken]);
 
   return (
     <div className="rounded-3xl bg-paper-raised shadow-[0_1px_3px_rgba(10,14,39,0.06),0_12px_32px_-12px_rgba(10,14,39,0.12)] overflow-hidden">
@@ -91,14 +152,17 @@ export default function ExchangeGapCalculator() {
       </div>
 
       {/* Rate inputs */}
-      <div className="px-5 sm:px-7 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="px-5 sm:px-7 pb-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label
-            htmlFor="official-rate"
-            className="block text-[11.5px] font-semibold text-ink-soft mb-1.5"
-          >
-            {selectedCountry.officialLabel}
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label
+              htmlFor="official-rate"
+              className="text-[11.5px] font-semibold text-ink-soft"
+            >
+              {selectedCountry.officialLabel}
+            </label>
+            {canAutoFetch && <StatusBadge status={officialStatus} />}
+          </div>
           <input
             id="official-rate"
             type="text"
@@ -109,12 +173,15 @@ export default function ExchangeGapCalculator() {
           />
         </div>
         <div>
-          <label
-            htmlFor="parallel-rate"
-            className="block text-[11.5px] font-semibold text-ink-soft mb-1.5"
-          >
-            {selectedCountry.parallelLabel}
-          </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label
+              htmlFor="parallel-rate"
+              className="text-[11.5px] font-semibold text-ink-soft"
+            >
+              {selectedCountry.parallelLabel}
+            </label>
+            {country === "ar" && <StatusBadge status={parallelStatus} />}
+          </div>
           <input
             id="parallel-rate"
             type="text"
@@ -125,10 +192,25 @@ export default function ExchangeGapCalculator() {
           />
         </div>
       </div>
-      <p className="px-5 sm:px-7 -mt-3 pb-5 text-[11.5px] text-ink-soft opacity-70">
-        Ingresá las tasas del momento — cambian constantemente, así que esta
-        calculadora no las fija por vos.
-      </p>
+
+      <div className="px-5 sm:px-7 pb-5 flex items-center justify-between flex-wrap gap-2">
+        <p className="text-[11.5px] text-ink-soft opacity-70">
+          {country === "ve"
+            ? "La tasa BCV se carga sola. El precio P2P cambia minuto a minuto y no tiene fuente automática gratuita confiable — ingresalo vos."
+            : canAutoFetch
+              ? "Las tasas se cargan solas. Podés editarlas si querés probar otro escenario."
+              : "Ingresá las tasas del momento — cambian constantemente, así que esta calculadora no las fija por vos."}
+        </p>
+        {canAutoFetch && (
+          <button
+            type="button"
+            onClick={() => setRefreshToken((t) => t + 1)}
+            className="text-[11.5px] font-semibold text-violet hover:underline cursor-pointer shrink-0"
+          >
+            Actualizar
+          </button>
+        )}
+      </div>
 
       {/* Result */}
       <div className="mx-5 sm:mx-7 mb-5 sm:mb-7 rounded-2xl bg-gradient-to-br from-navy-deep via-navy-mid to-violet p-6 sm:p-8 text-white relative overflow-hidden">
@@ -204,10 +286,41 @@ export default function ExchangeGapCalculator() {
               </tbody>
             </table>
           </div>
+          {officialFetchedAt && canAutoFetch && (
+            <p className="mt-3 text-[11px] text-ink-soft opacity-60 font-mono">
+              Última actualización: {new Date(officialFetchedAt).toLocaleString("es-419")}
+            </p>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+function StatusBadge({ status }: { status: FetchStatus }) {
+  if (status === "loading") {
+    return (
+      <span className="text-[10px] font-mono text-ink-soft opacity-60">
+        cargando…
+      </span>
+    );
+  }
+  if (status === "success") {
+    return (
+      <span className="text-[10px] font-mono text-mint font-semibold flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-mint" aria-hidden />
+        auto
+      </span>
+    );
+  }
+  if (status === "error") {
+    return (
+      <span className="text-[10px] font-mono text-coral font-semibold">
+        sin datos — ingresá manual
+      </span>
+    );
+  }
+  return null;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
