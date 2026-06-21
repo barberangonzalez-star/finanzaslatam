@@ -16,9 +16,25 @@ const COUNTRY_FLAGS: Record<GapCountry, string> = {
   cl: "🇨🇱",
 };
 
-// Only Venezuela and Argentina have a working auto-fetch route — Colombia
-// and Chile stay fully manual (no key-free public source found for either).
-const AUTO_FETCH_COUNTRIES: GapCountry[] = ["ve", "ar"];
+// All four countries now have a working auto-fetch route for the official
+// rate. Only Argentina also auto-fetches a second ("parallel") rate — see
+// AUTO_FETCH_PARALLEL_COUNTRIES below.
+const AUTO_FETCH_COUNTRIES: GapCountry[] = ["ve", "ar", "co", "cl"];
+
+// Argentina is the only country where the route also returns a working
+// second rate (blue) automatically. Venezuela's P2P has no key-free public
+// source; Colombia and Chile don't have a structural parallel rate to
+// compare against, so that field stays fully user-defined for them.
+const AUTO_FETCH_PARALLEL_COUNTRIES: GapCountry[] = ["ar"];
+
+// Reasonable starting placeholders shown before the first fetch completes
+// (or if it fails and the user needs a sane default to edit from).
+const DEFAULT_RATES: Record<GapCountry, { official: string; parallel: string }> = {
+  ve: { official: "607.39", parallel: "803.90" },
+  ar: { official: "1430.00", parallel: "1480.00" },
+  co: { official: "4050.00", parallel: "4050.00" },
+  cl: { official: "950.00", parallel: "950.00" },
+};
 
 function parseAmount(raw: string): number {
   const cleaned = raw.replace(/[^0-9.]/g, "");
@@ -30,8 +46,8 @@ type FetchStatus = "idle" | "loading" | "success" | "error";
 export default function ExchangeGapCalculator() {
   const [amountInput, setAmountInput] = useState("100");
   const [country, setCountry] = useState<GapCountry>("ve");
-  const [officialInput, setOfficialInput] = useState("607.39");
-  const [parallelInput, setParallelInput] = useState("803.90");
+  const [officialInput, setOfficialInput] = useState(DEFAULT_RATES.ve.official);
+  const [parallelInput, setParallelInput] = useState(DEFAULT_RATES.ve.parallel);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
   const [officialStatus, setOfficialStatus] = useState<FetchStatus>("idle");
@@ -46,6 +62,7 @@ export default function ExchangeGapCalculator() {
   const parallelRate = parseAmount(parallelInput);
   const selectedCountry = GAP_COUNTRIES.find((c) => c.code === country)!;
   const canAutoFetch = AUTO_FETCH_COUNTRIES.includes(country);
+  const autoFetchesParallel = AUTO_FETCH_PARALLEL_COUNTRIES.includes(country);
 
   const result = useMemo(
     () => calculateExchangeGap(amount, officialRate, parallelRate),
@@ -60,10 +77,11 @@ export default function ExchangeGapCalculator() {
     if (!AUTO_FETCH_COUNTRIES.includes(country)) return;
 
     const controller = new AbortController();
+    const fetchesParallel = AUTO_FETCH_PARALLEL_COUNTRIES.includes(country);
 
     (async () => {
       setOfficialStatus("loading");
-      if (country === "ar") setParallelStatus("loading");
+      if (fetchesParallel) setParallelStatus("loading");
 
       try {
         const res = await fetch(`/api/rates?country=${country}`, {
@@ -81,25 +99,38 @@ export default function ExchangeGapCalculator() {
             setOfficialStatus("error");
           }
 
-          if (country === "ar" && typeof data.parallel === "number") {
+          if (fetchesParallel && typeof data.parallel === "number") {
             setParallelInput(data.parallel.toFixed(2));
             setParallelStatus("success");
-          } else if (country === "ar") {
+          } else if (fetchesParallel) {
             setParallelStatus("error");
           }
         } else {
           setOfficialStatus("error");
-          if (country === "ar") setParallelStatus("error");
+          if (fetchesParallel) setParallelStatus("error");
         }
       } catch {
         if (controller.signal.aborted) return;
         setOfficialStatus("error");
-        if (country === "ar") setParallelStatus("error");
+        if (fetchesParallel) setParallelStatus("error");
       }
     })();
 
     return () => controller.abort();
   }, [country, refreshToken]);
+
+  function helperText(): string {
+    if (country === "ve") {
+      return "La tasa BCV se carga sola. El precio P2P cambia minuto a minuto y no tiene fuente automática gratuita confiable — ingresalo vos.";
+    }
+    if (country === "ar") {
+      return "Ambas tasas se cargan solas (oficial y blue). Podés editarlas si querés probar otro escenario.";
+    }
+    if (canAutoFetch) {
+      return `${selectedCountry.officialLabel} se carga sola. No hay una brecha cambiaria estructural acá — ingresá cualquier otra tasa que quieras comparar.`;
+    }
+    return "Ingresá las tasas del momento — cambian constantemente, así que esta calculadora no las fija por vos.";
+  }
 
   return (
     <div className="rounded-3xl bg-paper-raised shadow-[0_1px_3px_rgba(10,14,39,0.06),0_12px_32px_-12px_rgba(10,14,39,0.12)] overflow-hidden">
@@ -136,7 +167,13 @@ export default function ExchangeGapCalculator() {
             <button
               key={c.code}
               type="button"
-              onClick={() => setCountry(c.code)}
+              onClick={() => {
+                setCountry(c.code);
+                setOfficialInput(DEFAULT_RATES[c.code].official);
+                setParallelInput(DEFAULT_RATES[c.code].parallel);
+                setOfficialStatus("idle");
+                setParallelStatus("idle");
+              }}
               aria-pressed={country === c.code}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium transition-all cursor-pointer ${
                 country === c.code
@@ -180,7 +217,7 @@ export default function ExchangeGapCalculator() {
             >
               {selectedCountry.parallelLabel}
             </label>
-            {country === "ar" && <StatusBadge status={parallelStatus} />}
+            {autoFetchesParallel && <StatusBadge status={parallelStatus} />}
           </div>
           <input
             id="parallel-rate"
@@ -194,13 +231,7 @@ export default function ExchangeGapCalculator() {
       </div>
 
       <div className="px-5 sm:px-7 pb-5 flex items-center justify-between flex-wrap gap-2">
-        <p className="text-[11.5px] text-ink-soft opacity-70">
-          {country === "ve"
-            ? "La tasa BCV se carga sola. El precio P2P cambia minuto a minuto y no tiene fuente automática gratuita confiable — ingresalo vos."
-            : canAutoFetch
-              ? "Las tasas se cargan solas. Podés editarlas si querés probar otro escenario."
-              : "Ingresá las tasas del momento — cambian constantemente, así que esta calculadora no las fija por vos."}
-        </p>
+        <p className="text-[11.5px] text-ink-soft opacity-70">{helperText()}</p>
         {canAutoFetch && (
           <button
             type="button"
@@ -222,14 +253,14 @@ export default function ExchangeGapCalculator() {
         />
         <div className="relative">
           <div className="font-mono text-[11px] uppercase tracking-widest text-mint mb-1.5">
-            Brecha cambiaria
+            {country === "ve" || country === "ar" ? "Brecha cambiaria" : "Diferencia"}
           </div>
           <div className="font-display text-4xl sm:text-5xl font-bold leading-none tracking-tight">
             {isPositiveGap ? "+" : ""}
             {result.gapPercent.toFixed(1)}%
           </div>
           <div className="mt-2.5 text-[13px] text-white/70">
-            La {selectedCountry.parallelLabel.toLowerCase()} está{" "}
+            La tasa que ingresaste está{" "}
             {isPositiveGap ? "más cara" : "más barata"} que la{" "}
             {selectedCountry.officialLabel.toLowerCase()}
           </div>
@@ -270,7 +301,7 @@ export default function ExchangeGapCalculator() {
                   value={formatLocalCurrency(result.amountAtOfficial, selectedCountry.currency)}
                 />
                 <Row
-                  label={`${formatCurrency(amount)} al ${selectedCountry.parallelLabel.toLowerCase()}`}
+                  label={`${formatCurrency(amount)} a la tasa que ingresaste`}
                   value={formatLocalCurrency(result.amountAtParallel, selectedCountry.currency)}
                 />
                 <tr>

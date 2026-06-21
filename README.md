@@ -36,9 +36,16 @@ npm run dev
 
 A diferencia de SDLT o las comisiones de PayPal (tarifas estructurales fijadas por ley o política, estables por meses), el precio del USDT en Binance P2P y el dólar blue argentino cambian por minuto. Hardcodear un número ahí sería publicar un dato falso desde el día siguiente. Por eso:
 
-- **`/cripto`** auto-completa lo que sí tiene fuente pública sin API key (tasa BCV oficial vía `rates.dolarvzla.com`, y oficial + blue de Argentina vía `dolarapi.com`), a través de la API route `src/app/api/rates/route.ts`. El precio P2P de Venezuela queda manual porque ninguna fuente pública que encontramos lo expone sin requerir una API key registrada (Cotizave, dolarvzla.com) — preferimos no depender de una key de terceros que podría cambiar de plan sin avisar.
+- **`/cripto`** auto-completa la tasa oficial de los 4 países vía `src/app/api/rates/route.ts`, todas con fuentes públicas sin API key:
+  - 🇻🇪 Venezuela: tasa BCV vía `rates.dolarvzla.com`
+  - 🇦🇷 Argentina: oficial + blue vía `dolarapi.com` (única que auto-completa ambos lados)
+  - 🇨🇴 Colombia: TRM vía el portal oficial de datos abiertos `datos.gov.co` (dataset Socrata `32sa-8pi3`)
+  - 🇨🇱 Chile: dólar observado vía `mindicador.cl` (fuente: Banco Central de Chile)
+
+  El precio P2P de Venezuela queda manual porque ninguna fuente pública que encontramos lo expone sin requerir una API key registrada (Cotizave, dolarvzla.com). Colombia y Chile no tienen una brecha cambiaria estructural como Venezuela/Argentina (no hay control de cambios fuerte), así que ahí solo se auto-completa la oficial — el campo de comparación queda abierto para que el usuario meta cualquier tasa que quiera comparar (casa de cambio, P2P, etc.), en vez de forzar un concepto de "paralelo" que no aplica a esas economías.
+
 - **`/remesas`** usa estructuras de comisión representativas (publicadas por cada proveedor) pero le pide al usuario el tipo de cambio del día — mismo principio: ese tipo de cambio cambia constantemente y no tiene fuente única confiable para todos los pares de moneda que cubre el comparador.
-- Si la fuente automática falla (caída, cambio de formato), el campo cae a edición manual con un indicador visual ("sin datos — ingresá manual") — la calculadora nunca se rompe por una API externa caída.
+- Si una fuente automática falla (caída, cambio de formato), el campo cae a edición manual con un indicador visual ("sin datos — ingresá manual") — la calculadora nunca se rompe por una API externa caída.
 
 ## Fuente de datos
 

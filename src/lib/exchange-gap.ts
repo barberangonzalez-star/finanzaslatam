@@ -73,14 +73,14 @@ export const GAP_COUNTRIES: GapCountryInfo[] = [
     name: "Colombia",
     currency: "COP",
     officialLabel: "TRM oficial",
-    parallelLabel: "Tasa Binance P2P",
+    parallelLabel: "Otra tasa a comparar (casa de cambio, P2P, etc.)",
   },
   {
     code: "cl",
     name: "Chile",
     currency: "CLP",
     officialLabel: "Dólar observado (oficial)",
-    parallelLabel: "Tasa Binance P2P",
+    parallelLabel: "Otra tasa a comparar (casa de cambio, P2P, etc.)",
   },
 ];
 

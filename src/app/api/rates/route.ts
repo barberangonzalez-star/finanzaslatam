@@ -3,19 +3,26 @@ import { NextRequest, NextResponse } from "next/server";
 // Proxies exchange-rate lookups so the client doesn't call third-party APIs
 // directly (avoids CORS issues, lets us cache, centralizes error handling).
 //
-// Sources used (both public, no API key required):
+// Sources used (all public, no API key required):
 // - Venezuela official (BCV): rates.dolarvzla.com/bcv/current.json — public
-//   CDN, no key, no rate limit, documented as CORS-open. Scrapes bcv.org.ve
-//   upstream, so this mirrors the actual official rate.
-// - Argentina (oficial + blue): dolarapi.com — open-source community API,
-//   no key required, stable JSON shape.
+//   CDN, no key, no rate limit, CORS-open. Scrapes bcv.org.ve upstream.
+// - Argentina (oficial + blue): dolarapi.com — open-source community API.
+// - Colombia (TRM): datos.gov.co Socrata dataset 32sa-8pi3 — official
+//   government open-data portal, anonymous/no-key access for light use.
+// - Chile (dólar observado): mindicador.cl/api/dolar — community API
+//   sourcing from Banco Central de Chile, no key required.
 //
 // Venezuela's parallel/P2P rate (Binance P2P) is intentionally NOT
-// auto-fetched here: every public source we found for it requires a free
-// but registered API key (Cotizave, dolarvzla.com's USDT endpoint). Rather
-// than depend on a third-party key that could change plans or go away,
-// that field stays manual — the user enters today's P2P price themselves,
-// same as before.
+// auto-fetched: every public source found for it requires a free but
+// registered API key (Cotizave, dolarvzla.com's USDT endpoint). Rather
+// than depend on a third-party key that could change plans or disappear,
+// that field stays manual.
+//
+// Colombia and Chile don't have a structural exchange-control gap the way
+// Venezuela and Argentina do, so only the official rate (TRM / dólar
+// observado) is auto-fetched for them — the "compare against" field stays
+// fully manual and user-defined (a cambio house quote, P2P price, etc.),
+// rather than assuming a P2P rate exists to compare against.
 //
 // Every fetch here is wrapped so a failure returns a clean "unavailable"
 // response instead of crashing; the calculator on the client always
@@ -121,13 +128,105 @@ async function fetchArgentina(): Promise<RateResponse> {
   }
 }
 
+async function fetchColombia(): Promise<RateResponse> {
+  const fetchedAt = new Date().toISOString();
+  try {
+    const res = await fetch(
+      "https://www.datos.gov.co/resource/32sa-8pi3.json?$limit=1&$order=vigenciadesde%20DESC",
+      { next: { revalidate: 120 } }
+    );
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        official: null,
+        parallel: null,
+        source: "datos.gov.co",
+        fetchedAt,
+        error: "La fuente de la TRM no respondió correctamente.",
+      };
+    }
+
+    const data = await res.json();
+    const row = Array.isArray(data) ? data[0] : null;
+    const official = row && typeof row.valor === "string" ? parseFloat(row.valor) : null;
+
+    if (official === null || Number.isNaN(official)) {
+      return {
+        ok: false,
+        official: null,
+        parallel: null,
+        source: "datos.gov.co",
+        fetchedAt,
+        error: "La respuesta no tenía el formato esperado.",
+      };
+    }
+
+    return { ok: true, official, parallel: null, source: "datos.gov.co", fetchedAt };
+  } catch {
+    return {
+      ok: false,
+      official: null,
+      parallel: null,
+      source: "datos.gov.co",
+      fetchedAt,
+      error: "Error de red consultando la TRM.",
+    };
+  }
+}
+
+async function fetchChile(): Promise<RateResponse> {
+  const fetchedAt = new Date().toISOString();
+  try {
+    const res = await fetch("https://mindicador.cl/api/dolar", {
+      next: { revalidate: 120 },
+    });
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        official: null,
+        parallel: null,
+        source: "mindicador.cl",
+        fetchedAt,
+        error: "La fuente del dólar observado no respondió correctamente.",
+      };
+    }
+
+    const data = await res.json();
+    const serie = Array.isArray(data?.serie) ? data.serie : null;
+    const official = serie && serie.length > 0 && typeof serie[0].valor === "number"
+      ? serie[0].valor
+      : null;
+
+    if (official === null) {
+      return {
+        ok: false,
+        official: null,
+        parallel: null,
+        source: "mindicador.cl",
+        fetchedAt,
+        error: "La respuesta no tenía el formato esperado.",
+      };
+    }
+
+    return { ok: true, official, parallel: null, source: "mindicador.cl", fetchedAt };
+  } catch {
+    return {
+      ok: false,
+      official: null,
+      parallel: null,
+      source: "mindicador.cl",
+      fetchedAt,
+      error: "Error de red consultando el dólar observado.",
+    };
+  }
+}
+
 export async function GET(request: NextRequest) {
   const country = request.nextUrl.searchParams.get("country");
 
   if (country === "ve") {
-    // Only the official BCV rate is auto-fetched. The parallel/P2P rate
-    // has no key-free public source, so it's not included here — the
-    // client keeps that field manual.
     const result = await fetchVenezuelaOfficial();
     return NextResponse.json(result, { status: result.ok ? 200 : 502 });
   }
@@ -137,8 +236,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result, { status: result.ok ? 200 : 502 });
   }
 
+  if (country === "co") {
+    const result = await fetchColombia();
+    return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+  }
+
+  if (country === "cl") {
+    const result = await fetchChile();
+    return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+  }
+
   return NextResponse.json(
-    { ok: false, error: "País no soportado. Usá 've' o 'ar'." },
+    { ok: false, error: "País no soportado. Usá 've', 'ar', 'co' o 'cl'." },
     { status: 400 }
   );
 }
