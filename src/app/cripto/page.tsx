@@ -6,7 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "Calculadora de Brecha Cambiaria | Binance P2P vs Oficial",
   description:
-    "Calculá la brecha entre el tipo de cambio oficial y el paralelo (Binance P2P, dólar blue) en Venezuela y Argentina. Ingresá las tasas del día y mirá la diferencia real.",
+    "Calculá la brecha entre el tipo de cambio oficial y el paralelo (Binance P2P, dólar blue) en Venezuela, Argentina y Bolivia. Ingresá las tasas del día y mirá la diferencia real.",
   alternates: {
     canonical: "https://finanzaslatam.xyz/cripto",
   },
@@ -26,7 +26,7 @@ export default function CriptoPage() {
       priceCurrency: "USD",
     },
     description:
-      "Calculadora de brecha cambiaria entre tasa oficial y tasa paralela (Binance P2P, dólar blue) para Venezuela y Argentina.",
+      "Calculadora de brecha cambiaria entre tasa oficial y tasa paralela (Binance P2P, dólar blue) para Venezuela, Argentina y Bolivia.",
     about: {
       "@type": "Thing",
       name: "Brecha cambiaria",
@@ -50,7 +50,7 @@ export default function CriptoPage() {
         <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-soft mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-violet" aria-hidden />
           <span className="font-mono text-[11px] font-semibold text-violet uppercase tracking-wide">
-            Venezuela · Argentina
+            Venezuela · Argentina · Bolivia · Colombia · Chile
           </span>
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-bold leading-[1.1] tracking-tight mb-3">
@@ -130,6 +130,22 @@ export default function CriptoPage() {
             el cripto, que suelen moverse juntos. Con la salida del cepo
             cambiario en 2025, la brecha entre ambos se redujo
             significativamente respecto a años anteriores.
+          </p>
+        </article>
+        <article>
+          <h2 className="font-display text-xl font-bold mb-2.5">
+            Bolivia: un tipo de cambio fijo desde 2011
+          </h2>
+          <p className="text-[14.5px] text-ink-soft leading-relaxed">
+            El Banco Central de Bolivia mantiene un tipo de cambio oficial
+            fijo desde noviembre de 2011, sin moverse pese a la escasez de
+            dólares en el sistema bancario formal. Como los bancos
+            bolivianos limitan fuertemente cuánto dólar físico venden por
+            persona al mes, gran parte de la demanda real se trasladó a
+            plataformas P2P como Binance, donde el precio lo determina la
+            oferta y la demanda — sin intervención del banco central. La
+            brecha entre ambos ha estado en niveles altos, similar en
+            magnitud a la de Venezuela.
           </p>
         </article>
       </section>

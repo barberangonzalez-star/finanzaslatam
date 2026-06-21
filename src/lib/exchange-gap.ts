@@ -43,7 +43,7 @@ export function calculateExchangeGap(
   };
 }
 
-export type GapCountry = "ve" | "ar" | "co" | "cl";
+export type GapCountry = "ve" | "ar" | "bo" | "co" | "cl";
 
 export interface GapCountryInfo {
   code: GapCountry;
@@ -67,6 +67,13 @@ export const GAP_COUNTRIES: GapCountryInfo[] = [
     currency: "ARS",
     officialLabel: "Dólar oficial",
     parallelLabel: "Dólar blue / MEP",
+  },
+  {
+    code: "bo",
+    name: "Bolivia",
+    currency: "BOB",
+    officialLabel: "Tipo de cambio oficial (BCB)",
+    parallelLabel: "Dólar paralelo / Binance P2P",
   },
   {
     code: "co",

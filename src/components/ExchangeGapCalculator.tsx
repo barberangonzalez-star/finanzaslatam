@@ -12,26 +12,29 @@ import { formatCurrency } from "@/lib/paypal-fees";
 const COUNTRY_FLAGS: Record<GapCountry, string> = {
   ve: "🇻🇪",
   ar: "🇦🇷",
+  bo: "🇧🇴",
   co: "🇨🇴",
   cl: "🇨🇱",
 };
 
-// All four countries now have a working auto-fetch route for the official
-// rate. Only Argentina also auto-fetches a second ("parallel") rate — see
-// AUTO_FETCH_PARALLEL_COUNTRIES below.
-const AUTO_FETCH_COUNTRIES: GapCountry[] = ["ve", "ar", "co", "cl"];
+// All five countries now have a working auto-fetch route for the official
+// rate. Argentina and Bolivia also auto-fetch a second ("parallel") rate —
+// see AUTO_FETCH_PARALLEL_COUNTRIES below.
+const AUTO_FETCH_COUNTRIES: GapCountry[] = ["ve", "ar", "bo", "co", "cl"];
 
-// Argentina is the only country where the route also returns a working
-// second rate (blue) automatically. Venezuela's P2P has no key-free public
-// source; Colombia and Chile don't have a structural parallel rate to
-// compare against, so that field stays fully user-defined for them.
-const AUTO_FETCH_PARALLEL_COUNTRIES: GapCountry[] = ["ar"];
+// Argentina and Bolivia are the only countries where the route also
+// returns a working second rate automatically (blue for AR, Binance
+// reference for BO). Venezuela's P2P has no key-free public source;
+// Colombia and Chile don't have a structural parallel rate to compare
+// against, so that field stays fully user-defined for them.
+const AUTO_FETCH_PARALLEL_COUNTRIES: GapCountry[] = ["ar", "bo"];
 
 // Reasonable starting placeholders shown before the first fetch completes
 // (or if it fails and the user needs a sane default to edit from).
 const DEFAULT_RATES: Record<GapCountry, { official: string; parallel: string }> = {
   ve: { official: "607.39", parallel: "803.90" },
   ar: { official: "1430.00", parallel: "1480.00" },
+  bo: { official: "6.96", parallel: "9.90" },
   co: { official: "4050.00", parallel: "4050.00" },
   cl: { official: "950.00", parallel: "950.00" },
 };
@@ -123,8 +126,8 @@ export default function ExchangeGapCalculator() {
     if (country === "ve") {
       return "La tasa BCV se carga sola. El precio P2P cambia minuto a minuto y no tiene fuente automática gratuita confiable — ingresalo vos.";
     }
-    if (country === "ar") {
-      return "Ambas tasas se cargan solas (oficial y blue). Podés editarlas si querés probar otro escenario.";
+    if (country === "ar" || country === "bo") {
+      return "Ambas tasas se cargan solas (oficial y paralelo). Podés editarlas si querés probar otro escenario.";
     }
     if (canAutoFetch) {
       return `${selectedCountry.officialLabel} se carga sola. No hay una brecha cambiaria estructural acá — ingresá cualquier otra tasa que quieras comparar.`;
@@ -253,7 +256,9 @@ export default function ExchangeGapCalculator() {
         />
         <div className="relative">
           <div className="font-mono text-[11px] uppercase tracking-widest text-mint mb-1.5">
-            {country === "ve" || country === "ar" ? "Brecha cambiaria" : "Diferencia"}
+            {country === "ve" || country === "ar" || country === "bo"
+              ? "Brecha cambiaria"
+              : "Diferencia"}
           </div>
           <div className="font-display text-4xl sm:text-5xl font-bold leading-none tracking-tight">
             {isPositiveGap ? "+" : ""}

@@ -7,6 +7,8 @@ import { NextRequest, NextResponse } from "next/server";
 // - Venezuela official (BCV): rates.dolarvzla.com/bcv/current.json — public
 //   CDN, no key, no rate limit, CORS-open. Scrapes bcv.org.ve upstream.
 // - Argentina (oficial + blue): dolarapi.com — open-source community API.
+// - Bolivia (oficial + binance reference): bo.dolarapi.com — same project,
+//   Bolivia-specific subdomain. Same JSON shape as Argentina's endpoints.
 // - Colombia (TRM): datos.gov.co Socrata dataset 32sa-8pi3 — official
 //   government open-data portal, anonymous/no-key access for light use.
 // - Chile (dólar observado): mindicador.cl/api/dolar — community API
@@ -19,10 +21,10 @@ import { NextRequest, NextResponse } from "next/server";
 // that field stays manual.
 //
 // Colombia and Chile don't have a structural exchange-control gap the way
-// Venezuela and Argentina do, so only the official rate (TRM / dólar
-// observado) is auto-fetched for them — the "compare against" field stays
-// fully manual and user-defined (a cambio house quote, P2P price, etc.),
-// rather than assuming a P2P rate exists to compare against.
+// Venezuela, Argentina, and Bolivia do, so only the official rate (TRM /
+// dólar observado) is auto-fetched for them — the "compare against" field
+// stays fully manual and user-defined (a cambio house quote, P2P price,
+// etc.), rather than assuming a P2P rate exists to compare against.
 //
 // Every fetch here is wrapped so a failure returns a clean "unavailable"
 // response instead of crashing; the calculator on the client always
@@ -124,6 +126,50 @@ async function fetchArgentina(): Promise<RateResponse> {
       source: "dolarapi.com",
       fetchedAt,
       error: "Error de red consultando la fuente de Argentina.",
+    };
+  }
+}
+
+async function fetchBolivia(): Promise<RateResponse> {
+  const fetchedAt = new Date().toISOString();
+  try {
+    const [oficialRes, binanceRes] = await Promise.allSettled([
+      fetch("https://bo.dolarapi.com/v1/dolares/oficial", { next: { revalidate: 120 } }),
+      fetch("https://bo.dolarapi.com/v1/dolares/binance", { next: { revalidate: 120 } }),
+    ]);
+
+    let official: number | null = null;
+    if (oficialRes.status === "fulfilled" && oficialRes.value.ok) {
+      const data = await oficialRes.value.json();
+      official = typeof data?.venta === "number" ? data.venta : null;
+    }
+
+    let parallel: number | null = null;
+    if (binanceRes.status === "fulfilled" && binanceRes.value.ok) {
+      const data = await binanceRes.value.json();
+      parallel = typeof data?.venta === "number" ? data.venta : null;
+    }
+
+    if (official === null && parallel === null) {
+      return {
+        ok: false,
+        official: null,
+        parallel: null,
+        source: "bo.dolarapi.com",
+        fetchedAt,
+        error: "No se pudo obtener ninguna tasa en este momento.",
+      };
+    }
+
+    return { ok: true, official, parallel, source: "bo.dolarapi.com", fetchedAt };
+  } catch {
+    return {
+      ok: false,
+      official: null,
+      parallel: null,
+      source: "bo.dolarapi.com",
+      fetchedAt,
+      error: "Error de red consultando la fuente de Bolivia.",
     };
   }
 }
@@ -236,6 +282,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result, { status: result.ok ? 200 : 502 });
   }
 
+  if (country === "bo") {
+    const result = await fetchBolivia();
+    return NextResponse.json(result, { status: result.ok ? 200 : 502 });
+  }
+
   if (country === "co") {
     const result = await fetchColombia();
     return NextResponse.json(result, { status: result.ok ? 200 : 502 });
@@ -247,7 +298,7 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json(
-    { ok: false, error: "País no soportado. Usá 've', 'ar', 'co' o 'cl'." },
+    { ok: false, error: "País no soportado. Usá 've', 'ar', 'bo', 'co' o 'cl'." },
     { status: 400 }
   );
 }
