@@ -15,6 +15,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: "https://finanzaslatam.xyz/cripto/venezuela",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
+      url: "https://finanzaslatam.xyz/cripto/argentina",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
+      url: "https://finanzaslatam.xyz/cripto/bolivia",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
       url: "https://finanzaslatam.xyz/remesas",
       lastModified: new Date(),
       changeFrequency: "weekly",

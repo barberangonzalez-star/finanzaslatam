@@ -4,7 +4,10 @@ Portfolio de calculadoras financieras para Latinoamérica. Dominio: **finanzasla
 
 ## Estructura
 - `/` — calculadora de comisiones PayPal (México, Colombia, Chile, Argentina, Venezuela como referencia)
-- `/cripto` — brecha cambiaria (tasa oficial vs. Binance P2P / dólar blue) para Venezuela y Argentina
+- `/cripto` — calculadora de brecha cambiaria (5 países) + links a las 3 páginas dedicadas
+- `/cripto/venezuela` — dashboard de BCV Dólar y BCV Euro, auto-actualizados
+- `/cripto/argentina` — dashboard de oficial, blue y Euro, auto-actualizados
+- `/cripto/bolivia` — dashboard de oficial (BCB) y paralelo (Binance), auto-actualizados
 - `/remesas` — comparador de costo real (comisión + margen cambiario) entre Wise, Western Union y Payoneer
 - `/paypal` — redirect 308 a `/` (ruta legada, conserva SEO de versiones anteriores)
 
@@ -44,6 +47,10 @@ A diferencia de SDLT o las comisiones de PayPal (tarifas estructurales fijadas p
   - 🇨🇱 Chile: dólar observado vía `mindicador.cl` (fuente: Banco Central de Chile)
 
   El precio P2P de Venezuela queda manual porque ninguna fuente pública que encontramos lo expone sin requerir una API key registrada (Cotizave, dolarvzla.com). Colombia y Chile no tienen una brecha cambiaria estructural como Venezuela/Argentina/Bolivia (no hay control de cambios fuerte), así que ahí solo se auto-completa la oficial — el campo de comparación queda abierto para que el usuario meta cualquier tasa que quiera comparar (casa de cambio, P2P, etc.), en vez de forzar un concepto de "paralelo" que no aplica a esas economías.
+
+  **Euro**: además del Dólar, `/api/rates` también devuelve la tasa oficial de Euro para Venezuela (BCV, mismo endpoint que el Dólar) y Argentina (`dolarapi.com/v1/cotizaciones/eur`) en un campo opcional `eurOfficial`. Bolivia no tiene una fuente de Euro confirmada, así que ese campo queda vacío para ese país.
+
+  **Páginas dedicadas por país** (`/cripto/venezuela`, `/cripto/argentina`, `/cripto/bolivia`): en vez de pasar por el selector de país de la calculadora general, estas páginas muestran directamente las tasas del día para ese país específico — pensadas para quien quiere chequear "¿a cuánto está el dólar/euro hoy?" sin tener que tocar nada. Usan el mismo `/api/rates` y el hook compartido `useCountryRates` en `src/components/RateCard.tsx`.
 
 - **`/remesas`** usa estructuras de comisión representativas (publicadas por cada proveedor) pero le pide al usuario el tipo de cambio del día — mismo principio: ese tipo de cambio cambia constantemente y no tiene fuente única confiable para todos los pares de moneda que cubre el comparador.
 - Si una fuente automática falla (caída, cambio de formato), el campo cae a edición manual con un indicador visual ("sin datos — ingresá manual") — la calculadora nunca se rompe por una API externa caída.

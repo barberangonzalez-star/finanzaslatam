@@ -63,6 +63,39 @@ export default function CriptoPage() {
         </p>
       </header>
 
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+        <Link
+          href="/cripto/venezuela"
+          className="rounded-2xl bg-paper-raised border border-line p-4 hover:border-violet transition-colors"
+        >
+          <span className="text-[15px]">🇻🇪</span>
+          <div className="font-display font-bold text-[15px] text-ink mt-1">
+            Venezuela
+          </div>
+          <div className="text-[12px] text-ink-soft">BCV Dólar y Euro hoy</div>
+        </Link>
+        <Link
+          href="/cripto/argentina"
+          className="rounded-2xl bg-paper-raised border border-line p-4 hover:border-violet transition-colors"
+        >
+          <span className="text-[15px]">🇦🇷</span>
+          <div className="font-display font-bold text-[15px] text-ink mt-1">
+            Argentina
+          </div>
+          <div className="text-[12px] text-ink-soft">Oficial, blue y Euro hoy</div>
+        </Link>
+        <Link
+          href="/cripto/bolivia"
+          className="rounded-2xl bg-paper-raised border border-line p-4 hover:border-violet transition-colors"
+        >
+          <span className="text-[15px]">🇧🇴</span>
+          <div className="font-display font-bold text-[15px] text-ink mt-1">
+            Bolivia
+          </div>
+          <div className="text-[12px] text-ink-soft">Oficial y paralelo hoy</div>
+        </Link>
+      </div>
+
       <ExchangeGapCalculator />
 
       <section className="mt-14 space-y-9">

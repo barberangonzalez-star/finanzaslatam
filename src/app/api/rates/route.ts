@@ -36,6 +36,7 @@ interface RateResponse {
   ok: boolean;
   official: number | null;
   parallel: number | null;
+  eurOfficial?: number | null;
   source: string;
   fetchedAt: string;
   error?: string;
@@ -61,6 +62,7 @@ async function fetchVenezuelaOfficial(): Promise<RateResponse> {
 
     const data = await res.json();
     const official = typeof data?.current?.usd === "number" ? data.current.usd : null;
+    const eurOfficial = typeof data?.current?.eur === "number" ? data.current.eur : null;
 
     if (official === null) {
       return {
@@ -73,7 +75,7 @@ async function fetchVenezuelaOfficial(): Promise<RateResponse> {
       };
     }
 
-    return { ok: true, official, parallel: null, source: "dolarvzla.com", fetchedAt };
+    return { ok: true, official, parallel: null, eurOfficial, source: "dolarvzla.com", fetchedAt };
   } catch {
     return {
       ok: false,
@@ -89,9 +91,10 @@ async function fetchVenezuelaOfficial(): Promise<RateResponse> {
 async function fetchArgentina(): Promise<RateResponse> {
   const fetchedAt = new Date().toISOString();
   try {
-    const [oficialRes, blueRes] = await Promise.allSettled([
+    const [oficialRes, blueRes, eurRes] = await Promise.allSettled([
       fetch("https://dolarapi.com/v1/dolares/oficial", { next: { revalidate: 120 } }),
       fetch("https://dolarapi.com/v1/dolares/blue", { next: { revalidate: 120 } }),
+      fetch("https://dolarapi.com/v1/cotizaciones/eur", { next: { revalidate: 120 } }),
     ]);
 
     let official: number | null = null;
@@ -106,6 +109,12 @@ async function fetchArgentina(): Promise<RateResponse> {
       parallel = typeof data?.venta === "number" ? data.venta : null;
     }
 
+    let eurOfficial: number | null = null;
+    if (eurRes.status === "fulfilled" && eurRes.value.ok) {
+      const data = await eurRes.value.json();
+      eurOfficial = typeof data?.venta === "number" ? data.venta : null;
+    }
+
     if (official === null && parallel === null) {
       return {
         ok: false,
@@ -117,7 +126,7 @@ async function fetchArgentina(): Promise<RateResponse> {
       };
     }
 
-    return { ok: true, official, parallel, source: "dolarapi.com", fetchedAt };
+    return { ok: true, official, parallel, eurOfficial, source: "dolarapi.com", fetchedAt };
   } catch {
     return {
       ok: false,
