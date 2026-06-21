@@ -33,6 +33,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     },
     {
+      url: "https://finanzaslatam.xyz/conversor",
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.85,
+    },
+    {
       url: "https://finanzaslatam.xyz/remesas",
       lastModified: new Date(),
       changeFrequency: "weekly",

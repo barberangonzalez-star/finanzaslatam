@@ -8,6 +8,7 @@ Portfolio de calculadoras financieras para Latinoamérica. Dominio: **finanzasla
 - `/cripto/venezuela` — dashboard de BCV Dólar y BCV Euro, auto-actualizados
 - `/cripto/argentina` — dashboard de oficial, blue y Euro, auto-actualizados
 - `/cripto/bolivia` — dashboard de oficial (BCB) y paralelo (Binance), auto-actualizados
+- `/conversor` — conversor bidireccional Dólar/Euro/Bolívar usando solo la tasa oficial BCV
 - `/remesas` — comparador de costo real (comisión + margen cambiario) entre Wise, Western Union y Payoneer, con selector de país origen y destino
 - `/paypal` — redirect 308 a `/` (ruta legada, conserva SEO de versiones anteriores)
 
@@ -51,6 +52,8 @@ A diferencia de SDLT o las comisiones de PayPal (tarifas estructurales fijadas p
   **Euro**: además del Dólar, `/api/rates` también devuelve la tasa oficial de Euro para Venezuela (BCV, mismo endpoint que el Dólar) y Argentina (`dolarapi.com/v1/cotizaciones/eur`) en un campo opcional `eurOfficial`. Bolivia no tiene una fuente de Euro confirmada, así que ese campo queda vacío para ese país.
 
   **Páginas dedicadas por país** (`/cripto/venezuela`, `/cripto/argentina`, `/cripto/bolivia`): en vez de pasar por el selector de país de la calculadora general, estas páginas muestran directamente las tasas del día para ese país específico — pensadas para quien quiere chequear "¿a cuánto está el dólar/euro hoy?" sin tener que tocar nada. Usan el mismo `/api/rates` y el hook compartido `useCountryRates` en `src/components/RateCard.tsx`.
+
+  **Conversor** (`/conversor`): distinto de la calculadora de brecha — no compara tasas, solo convierte un monto puntual entre Dólar, Euro y Bolívar usando exclusivamente la tasa oficial BCV (la que aplica en transacciones formales). Bidireccional: cualquiera de las 3 monedas puede ser el origen. Lógica en `src/lib/converter.ts`, reutiliza el mismo `useCountryRates` hook.
 
 - **`/remesas`** usa estructuras de comisión representativas (publicadas por cada proveedor) pero le pide al usuario el tipo de cambio del día — mismo principio: ese tipo de cambio cambia constantemente y no tiene fuente única confiable para todos los pares de moneda que cubre el comparador.
 - Si una fuente automática falla (caída, cambio de formato), el campo cae a edición manual con un indicador visual ("sin datos — ingresá manual") — la calculadora nunca se rompe por una API externa caída.

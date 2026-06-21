@@ -117,6 +117,11 @@ export default function VenezuelaRatesView() {
         <Link href="/cripto" className="text-violet hover:underline">
           calculadora de brecha cambiaria
         </Link>
+        . Si lo que necesitás es convertir un monto puntual de Dólares o
+        Euros a Bolívares (o viceversa), probá el{" "}
+        <Link href="/conversor" className="text-violet hover:underline">
+          conversor de moneda
+        </Link>
         .
       </p>
 
