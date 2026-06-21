@@ -17,7 +17,7 @@ function parseAmount(raw: string): number {
 
 export default function VenezuelaConverter() {
   const rates = useCountryRates("ve", false, true);
-  const [amountInput, setAmountInput] = useState("100");
+  const [amountInput, setAmountInput] = useState("1");
   const [fromCurrency, setFromCurrency] = useState<ConverterCurrency>("usd");
 
   const amount = parseAmount(amountInput);
